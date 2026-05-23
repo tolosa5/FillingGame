@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,6 +7,7 @@ public class BottlesHandler : MonoBehaviour
     [SerializeField] private List<Bottle> bottles = new List<Bottle>();
     [SerializeField] private GameObject bottlePrefab;
     private Bottle selectedBottle;
+    private int bottlesToComplete;
 
     public Action OnCompletedLevelEvent;
 
@@ -18,6 +18,31 @@ public class BottlesHandler : MonoBehaviour
             bottle.OnBottleClickEvent += HandleBottleClick;
             bottle.OnBottleCompletedEvent += CheckAllBottlesCompleted;
         }
+    }
+    
+    public void SetBottles(int bottlesNumber, List<List<LiquidType>> liquids, int bottlesToBeCompleted)
+    {
+        for (int i = 0; i < bottlesNumber; i++)
+        {
+            Instantiate(bottlePrefab, transform, true);
+            bottles.Add(bottlePrefab.GetComponent<Bottle>());
+        }
+        
+        for (int i = 0; i < this.bottles.Count; i++)
+        {
+            this.bottles[i].SetUp(liquids[i]);
+        }
+        bottlesToComplete = bottlesToBeCompleted;
+    }
+    
+    public void ResetBottles()
+    {
+        foreach (Bottle bottle in bottles)
+        {
+            Destroy(bottle.gameObject);
+        }
+        bottles.Clear();
+        selectedBottle = null;
     }
 
     private void HandleBottleClick(Bottle bottle, bool isSelected)
@@ -30,7 +55,8 @@ public class BottlesHandler : MonoBehaviour
         
         if (isSelected)
         {
-            bottle.Deselect();
+            //Si la botella clicada esta seleccionada, se deselecciona
+            selectedBottle.Deselect();
             selectedBottle = null;
         }
         else
@@ -39,7 +65,7 @@ public class BottlesHandler : MonoBehaviour
             {
                 //Si la botella clicada no esta seleccionada Y no hay ninguna seleccionada, se selecciona la botella clicada
                 selectedBottle = bottle;
-                bottle.Select();
+                selectedBottle.Select();
             }
             else
             {
@@ -59,33 +85,9 @@ public class BottlesHandler : MonoBehaviour
                 aux++;
         }
 
-        if (aux < bottles.Count + 1)
+        if (aux < bottlesToComplete)
             return;
         
         OnCompletedLevelEvent?.Invoke();
-    }
-    
-    public void SetBottles(List<Bottle> bottles, List<List<Liquid.LiquidType>> liquids)
-    {
-        foreach (Bottle bottle in bottles)
-        {
-            Instantiate(bottlePrefab, transform, true);
-            this.bottles.Add(bottle);
-        }
-        
-        for (int i = 0; i < this.bottles.Count; i++)
-        {
-            this.bottles[i].SetUp(liquids[i]);
-        }
-    }
-    
-    public void ResetBottles()
-    {
-        foreach (Bottle bottle in bottles)
-        {
-            Destroy(bottle.gameObject);
-        }
-        bottles.Clear();
-        selectedBottle = null;
     }
 }

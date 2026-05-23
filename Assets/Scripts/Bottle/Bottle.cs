@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -23,9 +22,9 @@ public class Bottle : MonoBehaviour, IPointerClickHandler
     [Header("Liquid")]
     
     private readonly int maxLiquidStack = 4;
-    private Stack<Liquid.LiquidType> liquidStack = new Stack<Liquid.LiquidType>();
-    public Stack<Liquid.LiquidType> LiquidStack => liquidStack;
-    private List<Liquid.LiquidType> liquidsList = new List<Liquid.LiquidType>();
+    private Stack<LiquidType> liquidStack = new Stack<LiquidType>();
+    public Stack<LiquidType> LiquidStack => liquidStack;
+    private List<LiquidType> liquidsList = new List<LiquidType>();
     
     
     [Header("Events")]
@@ -34,7 +33,7 @@ public class Bottle : MonoBehaviour, IPointerClickHandler
     public Action<Bottle, bool> OnBottleClickEvent;
     public Action<Bottle> OnBottleCompletedEvent;
 
-    public void SetUp(List<Liquid.LiquidType> liquids)
+    public void SetUp(List<LiquidType> liquids)
     {
         liquidsList = liquids;
         if (liquids.Count <= 0)
@@ -51,7 +50,7 @@ public class Bottle : MonoBehaviour, IPointerClickHandler
     
     public void PourLiquid()
     {
-        Liquid.LiquidType previousTopType = liquidStack.Pop();
+        LiquidType previousTopType = liquidStack.Pop();
         liquidsList.RemoveAt(0);
         
         ChangeBottleState();
@@ -62,7 +61,7 @@ public class Bottle : MonoBehaviour, IPointerClickHandler
         PourLiquid();
     }
 
-    public void CheckOnPoured(Liquid.LiquidType type)
+    public void CheckOnPoured(LiquidType type)
     {
         liquidStack.Push(type);
         liquidsList.Add(type);
@@ -80,9 +79,9 @@ public class Bottle : MonoBehaviour, IPointerClickHandler
                 state = BottleStates.NOT_FULL;
                 break;
             case 4:
-                foreach (Liquid.LiquidType type in liquidsList)
+                foreach (LiquidType type in liquidsList)
                 {
-                    Liquid.LiquidType firstType = liquidsList[0];
+                    LiquidType firstType = liquidsList[0];
                     if (type != firstType)
                     {
                         //si algun tipo es diferente a los demas es que no esta correcta
