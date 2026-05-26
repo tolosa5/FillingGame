@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class BottlesHandler : MonoBehaviour
 {
-    [SerializeField] private List<Bottle> bottles = new List<Bottle>();
     [SerializeField] private GameObject bottlePrefab;
+    private List<Bottle> bottles = new List<Bottle>();
     private Bottle selectedBottle;
     private int bottlesToComplete;
 
@@ -70,8 +70,14 @@ public class BottlesHandler : MonoBehaviour
             else
             {
                 //Si hay alguna seleccionada diferente, es que quiere echar liquido
+                if (bottle.IsBottleFull())
+                    return;
+                
+                bottle.CheckOnPoured(selectedBottle.LiquidStack.Peek(), selectedBottle);
                 selectedBottle.PourLiquid();
-                bottle.CheckOnPoured(selectedBottle.LiquidStack.Peek());
+                
+                selectedBottle.Deselect();
+                selectedBottle = null;
             }
         }
     }

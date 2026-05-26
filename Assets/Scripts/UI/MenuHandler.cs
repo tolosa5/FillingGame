@@ -7,8 +7,8 @@ public class MenuHandler : MonoBehaviour
 {
     [Header("Level Completed Screen")]
     [SerializeField] private GameObject levelCompletedWrapper;
-    [SerializeField] private TextMeshProUGUI levelCompletedText;
     [SerializeField] private Button levelCompletedButton;
+    [SerializeField] private TextMeshProUGUI nextLevelText;
 
     public Action OnNextLevelEvent;
 
@@ -20,7 +20,7 @@ public class MenuHandler : MonoBehaviour
     public void LevelCompletedScreen(int completedLevel)
     {
         levelCompletedWrapper.SetActive(true);
-        levelCompletedText.text = completedLevel.ToString();
+        nextLevelText.text = completedLevel.ToString();
     }
 
     private void GoNextLevel()

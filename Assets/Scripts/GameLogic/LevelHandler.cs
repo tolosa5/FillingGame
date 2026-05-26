@@ -44,12 +44,13 @@ public class LevelHandler : MonoBehaviour
     private void ResetLevel()
     {
         bottleHandler.ResetBottles();
+        bottleHandler.gameObject.SetActive(true);
     }
 
     private void HandleLevelCompleted()
     {
         levelNumber++;
-        // Pantalla de victoria
+        bottleHandler.gameObject.SetActive(false);
         OnLevelCompletedEvent?.Invoke(levelNumber);
     }
 
