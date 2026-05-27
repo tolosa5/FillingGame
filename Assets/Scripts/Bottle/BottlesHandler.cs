@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class BottlesHandler : MonoBehaviour
@@ -24,13 +25,14 @@ public class BottlesHandler : MonoBehaviour
     {
         for (int i = 0; i < bottlesNumber; i++)
         {
-            Instantiate(bottlePrefab, transform, true);
-            bottles.Add(bottlePrefab.GetComponent<Bottle>());
+            GameObject bottle = Instantiate(bottlePrefab, transform, true);
+            bottles.Add(bottle.GetComponent<Bottle>());
         }
         
-        for (int i = 0; i < this.bottles.Count; i++)
+        for (int i = 0; i < bottles.Count; i++)
         {
-            this.bottles[i].SetUp(liquids[i]);
+            Debug.Log("New bottle setup");
+            bottles[i].SetUp(liquids[i]);
         }
         bottlesToComplete = bottlesToBeCompleted;
     }
@@ -73,7 +75,7 @@ public class BottlesHandler : MonoBehaviour
                 if (bottle.IsBottleFull())
                     return;
                 
-                bottle.CheckOnPoured(selectedBottle.LiquidStack.Peek(), selectedBottle);
+                bottle.CheckOnPoured(selectedBottle.LiquidsList.Last(), selectedBottle);
                 selectedBottle.PourLiquid();
                 
                 selectedBottle.Deselect();

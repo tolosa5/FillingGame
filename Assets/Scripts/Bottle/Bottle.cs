@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 public class Bottle : MonoBehaviour, IPointerClickHandler
 {
-    public enum BottleStates
+    private enum BottleStates
     {
         EMPTY,
         NOT_FULL,
@@ -17,13 +18,12 @@ public class Bottle : MonoBehaviour, IPointerClickHandler
 
     [HideInInspector] public bool isSelectable;
     private bool isSelected;
+    [SerializeField] private GameObject highlightVisual;
     
     
     [Header("Liquid")]
     
-    private readonly int maxLiquidStack = 4;
-    private Stack<LiquidType> liquidStack = new Stack<LiquidType>();
-    public Stack<LiquidType> LiquidStack => liquidStack;
+    private readonly int maxLiquidsQuantity = 4;
     private List<LiquidType> liquidsList = new List<LiquidType>();
     public List<LiquidType> LiquidsList => liquidsList;
     
@@ -39,16 +39,11 @@ public class Bottle : MonoBehaviour, IPointerClickHandler
 
     public void SetUp(List<LiquidType> liquids)
     {
-        //TODO: arreglar para que sea compatible con lista
-        liquidsList = liquids;
-        if (liquids.Count <= 0)
+        ClearLiquidVisual();
+        foreach (LiquidType liquid in liquids)
         {
-            ChangeBottleState();
-            return;
-        }
-        for (int i = liquidsList.Count; i <= 0; i--)
-        {
-            liquidStack.Push(liquidsList[i]);
+            liquidsList.Add(liquid);
+            UpdateLiquidVisual();
         }
         ChangeBottleState();
     }
@@ -56,13 +51,13 @@ public class Bottle : MonoBehaviour, IPointerClickHandler
     public void PourLiquid()
     {
         Debug.Log("Pouring liquid");
-        LiquidType previousTopType = liquidStack.Pop();
-        liquidsList.RemoveAt(0);
+        LiquidType previousTopType = liquidsList.Last();
+        liquidsList.RemoveAt(liquidsList.Count - 1);
         
         ChangeBottleState();
         UpdateLiquidVisual();
 
-        if (previousTopType != liquidStack.Peek() || state == BottleStates.EMPTY)
+        if (previousTopType != liquidsList[0] || state == BottleStates.EMPTY)
             return;
         
         PourLiquid();
@@ -70,9 +65,8 @@ public class Bottle : MonoBehaviour, IPointerClickHandler
 
     public void CheckOnPoured(LiquidType type, Bottle pouringBottle, int iterations = 0)
     {
-        Debug.Log("Being poured liquid");
-        liquidStack.Push(pouringBottle.LiquidsList[iterations]);
         liquidsList.Add(pouringBottle.LiquidsList[iterations]);
+        Debug.Log("Being poured liquid");
         
         ChangeBottleState();
         UpdateLiquidVisual();
@@ -91,7 +85,7 @@ public class Bottle : MonoBehaviour, IPointerClickHandler
 
     private void ChangeBottleState()
     {
-        switch (liquidStack.Count)
+        switch (liquidsList.Count)
         {
             case 0:
                 state = BottleStates.EMPTY;
@@ -100,9 +94,9 @@ public class Bottle : MonoBehaviour, IPointerClickHandler
                 state = BottleStates.NOT_FULL;
                 break;
             case 4:
+                LiquidType firstType = liquidsList[0];
                 foreach (LiquidType type in liquidsList)
                 {
-                    LiquidType firstType = liquidsList[0];
                     if (type != firstType)
                     {
                         //si algun tipo es diferente a los demas es que no esta correcta
@@ -120,11 +114,12 @@ public class Bottle : MonoBehaviour, IPointerClickHandler
         //0 = Abajo, 1 = Medio abajo, 2 = Medio arriba, 3 Arriba
         GameObject holder = liquidsVisualHolder.transform.GetChild(liquidsList.Count - 1).gameObject;
         //El color es el del liquido que esta en la parte de abajo, que es el ultimo de la lista
-        int color = (int)liquidsList[^1];
-        holder.transform.GetChild(color).gameObject.SetActive(true);
+        int color = (int)liquidsList.Last();
+        GameObject subHolder = holder.transform.GetChild(color).gameObject;
+        subHolder.SetActive(true);
         
         //Todos los espacios encima del ultimo se quitan
-        for (int i = liquidsList.Count; i < maxLiquidStack; i++)
+        for (int i = liquidsList.Count; i < maxLiquidsQuantity; i++)
         {
             Transform aux = liquidsVisualHolder.transform.GetChild(i);
             for (int j = 0; j < aux.childCount; j++)
@@ -140,6 +135,20 @@ public class Bottle : MonoBehaviour, IPointerClickHandler
         OnBottleCompletedEvent?.Invoke(this);
     }
 
+    private void ClearLiquidVisual()
+    {
+        for (int i = 0; i < liquidsVisualHolder.transform.childCount; i++)
+        {
+            Transform aux = liquidsVisualHolder.transform.GetChild(i);
+            for (int j = 0; j < aux.childCount; j++)
+            {
+                aux.GetChild(j).gameObject.SetActive(false);
+            }
+        }
+    }
+
+    #region Selection
+
     public void OnPointerClick(PointerEventData eventData)
     {
         Debug.Log("Bottle clicked");
@@ -149,12 +158,17 @@ public class Bottle : MonoBehaviour, IPointerClickHandler
     public void Deselect()
     {
         isSelected = false;
+        highlightVisual.SetActive(false);
     }
 
     public void Select()
     {
         isSelected = true;
+        highlightVisual.SetActive(true);
     }
+
+    #endregion
+
 
     #region Getters
 
